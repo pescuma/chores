@@ -3,6 +3,8 @@ module Chores where
 import qualified Data.Map as Map
 import           NextGen
 
+type Chores = [Chore]
+
 data Chore = Chore {
     getTitle       :: String,
     getDescription :: String,
@@ -14,13 +16,16 @@ instance Show Chore where
                          ++ (a
                              & Map.insert "description" d
                              & Map.toList
-                             -- & filter (\(_, v) -> v /= "")
+                             & filter (\(_, v) -> v /= "")
                              & concatMap (\(k, v) -> ", "++ k ++ "=" ++ v)
                          ) ++ " }"
 
 
+defaultChoreAttributes :: Map.Map String String
+defaultChoreAttributes = Map.fromList [ ("state", "open") ]
+
 createChore :: String -> Chore
-createChore t = Chore t "" Map.empty
+createChore t = Chore t "" defaultChoreAttributes
 
 setTitle :: String -> Chore -> Chore
 setTitle t (Chore _ d a) = Chore t d a
@@ -35,5 +40,7 @@ getAttributeOrDefault :: String -> String -> Chore -> String
 getAttributeOrDefault d n (Chore _ _ a) = Map.findWithDefault d n a
 
 setAttribute :: String -> String -> Chore -> Chore
-setAttribute n v (Chore t d a) = Chore t d (Map.insert n v a)
+setAttribute n v (Chore t d a) = if v /= "" then Chore t d (Map.insert n v a)
+                                 else Chore t d (Map.delete n a)
+
 
